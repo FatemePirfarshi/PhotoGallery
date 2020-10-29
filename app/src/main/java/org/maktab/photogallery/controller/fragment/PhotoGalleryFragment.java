@@ -6,6 +6,7 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.util.Log;
@@ -22,6 +23,7 @@ import org.maktab.photogallery.repository.PhotoRepository;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 
 public class PhotoGalleryFragment extends Fragment {
 
@@ -29,6 +31,9 @@ public class PhotoGalleryFragment extends Fragment {
     private static final String TAG = "PGF";
     private RecyclerView mRecyclerView;
     private PhotoRepository mRepository;
+    private int page = 1;
+
+    private int currentPage = 0;
 
     public PhotoGalleryFragment() {
         // Required empty public constructor
@@ -90,7 +95,19 @@ public class PhotoGalleryFragment extends Fragment {
 
     private void initViews() {
         mRecyclerView.setLayoutManager(new GridLayoutManager(getContext(), SPAN_COUNT));
+        mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+                if (!recyclerView.canScrollVertically(1)) {
+                    page++;
+                    FlickrTask flickrTask = new FlickrTask();
+                    flickrTask.execute();
+                }
+            }
+        });
     }
+
 
     private void setupAdapter(List<GalleryItem> items) {
         PhotoAdapter adapter = new PhotoAdapter(items);
@@ -146,6 +163,8 @@ public class PhotoGalleryFragment extends Fragment {
         public int getItemCount() {
             return mItems.size();
         }
+
+
     }
 
     private class FlickrTask extends AsyncTask<Void, Void, List<GalleryItem>> {
@@ -153,7 +172,7 @@ public class PhotoGalleryFragment extends Fragment {
         //this method runs on background thread
         @Override
         protected List<GalleryItem> doInBackground(Void... voids) {
-            List<GalleryItem> items = mRepository.fetchItems();
+            List<GalleryItem> items = mRepository.fetchItems(String.valueOf(page));
             return items;
         }
 

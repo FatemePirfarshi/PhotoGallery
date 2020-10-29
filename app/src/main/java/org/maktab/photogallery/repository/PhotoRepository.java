@@ -2,6 +2,9 @@ package org.maktab.photogallery.repository;
 
 import android.util.Log;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -17,19 +20,30 @@ public class PhotoRepository {
     private static final String TAG = "PhotoRepository";
     private FlickrFetcher mFetcher;
 
+    private List<GalleryItem> mItems;
+
+    public List<GalleryItem> getItems() {
+        return mItems;
+    }
+
+    public void setItems(List<GalleryItem> items) {
+        mItems = items;
+    }
+
     public PhotoRepository() {
         mFetcher = new FlickrFetcher();
     }
 
     //this method must run on background thread.
-    public List<GalleryItem> fetchItems() {
-        String url = mFetcher.getRecentUrl();
+    public List<GalleryItem> fetchItems(String page) {
+        String url = mFetcher.getRecentUrl(page);
         try {
             String response = mFetcher.getUrlString(url);
             Log.d(TAG, "response: " + response);
 
             JSONObject bodyObject = new JSONObject(response);
             List<GalleryItem> items = parseJson(bodyObject);
+            mItems.addAll(items);
             return items;
         } catch (IOException | JSONException e) {
             Log.e(TAG, e.getMessage(), e);
@@ -39,6 +53,8 @@ public class PhotoRepository {
 
     private List<GalleryItem> parseJson(JSONObject bodyObject) throws JSONException {
         List<GalleryItem> items = new ArrayList<>();
+
+        Gson gson = new GsonBuilder().create();
 
         JSONObject photosObject = bodyObject.getJSONObject("photos");
         JSONArray photoArray = photosObject.getJSONArray("photo");
@@ -54,7 +70,9 @@ public class PhotoRepository {
             String url = photoObject.getString("url_s");
 
             GalleryItem item = new GalleryItem(id, title, url);
-            items.add(item);
+            String itemResult = gson.toJson(item);
+            GalleryItem galleryItem = gson.fromJson(itemResult, GalleryItem.class);
+            items.add(galleryItem);
         }
 
         return items;

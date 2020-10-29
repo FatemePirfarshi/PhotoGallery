@@ -46,7 +46,7 @@ public class FlickrFetcher {
         return new String(getUrlBytes(urlSpec));
     }
 
-    public String getRecentUrl() {
+    public String getRecentUrl(String page) {
          Uri uri = Uri.parse(BASE_URL)
                  .buildUpon()
                  .appendQueryParameter("method", METHOD_RECENT)
@@ -54,6 +54,7 @@ public class FlickrFetcher {
                  .appendQueryParameter("format", "json")
                  .appendQueryParameter("nojsoncallback", "1")
                  .appendQueryParameter("extras", "url_s")
+                 .appendQueryParameter("pages", page)
                  .build();
 
          return uri.toString();
