@@ -35,15 +35,15 @@ public class PhotoRepository {
     }
 
     //this method must run on background thread.
-    public List<GalleryItem> fetchItems(String page) {
-        String url = mFetcher.getRecentUrl(page);
+    public List<GalleryItem> fetchItems() {
+        String url = mFetcher.getPopularUrl();
         try {
             String response = mFetcher.getUrlString(url);
             Log.d(TAG, "response: " + response);
 
             JSONObject bodyObject = new JSONObject(response);
             List<GalleryItem> items = parseJson(bodyObject);
-            mItems.addAll(items);
+//            mItems.addAll(items);
             return items;
         } catch (IOException | JSONException e) {
             Log.e(TAG, e.getMessage(), e);
