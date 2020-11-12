@@ -2,79 +2,106 @@ package org.maktab.photogallery.repository;
 
 import android.util.Log;
 
+import androidx.lifecycle.MutableLiveData;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.maktab.photogallery.model.GalleryItem;
+import org.maktab.photogallery.data.model.GalleryItem;
+import org.maktab.photogallery.data.remote.NetworkParams;
+import org.maktab.photogallery.data.remote.retrofit.FlickerService;
+import org.maktab.photogallery.data.remote.retrofit.RetrofitInstance;
 import org.maktab.photogallery.network.FlickrFetcher;
+import org.w3c.dom.ls.LSInput;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+
 public class PhotoRepository {
 
     private static final String TAG = "PhotoRepository";
-    private FlickrFetcher mFetcher;
 
-    private List<GalleryItem> mItems;
+    private final FlickerService mFlickerService;
+    private final MutableLiveData<List<GalleryItem>> mPopularItemsLiveData = new MutableLiveData<>();
+    private final MutableLiveData<List<GalleryItem>> mSearchItemsLiveData = new MutableLiveData<>();
 
-    public List<GalleryItem> getItems() {
-        return mItems;
+    public MutableLiveData<List<GalleryItem>> getPopularItemsLiveData(){
+        return mPopularItemsLiveData;
     }
 
-    public void setItems(List<GalleryItem> items) {
-        mItems = items;
+    public MutableLiveData<List<GalleryItem>> getSearchItemsLiveData(){
+        return mSearchItemsLiveData;
     }
 
     public PhotoRepository() {
-        mFetcher = new FlickrFetcher();
+        Retrofit retrofit = RetrofitInstance.getInstance().getRetrofit();
+        mFlickerService = retrofit.create(FlickerService.class);
     }
 
-    //this method must run on background thread.
-    public List<GalleryItem> fetchItems() {
-        String url = mFetcher.getPopularUrl();
+    public List<GalleryItem> fetchPopularItems(){
+        Call<List<GalleryItem>> call = mFlickerService.listItems(NetworkParams.getPopularOptions());
         try {
-            String response = mFetcher.getUrlString(url);
-            Log.d(TAG, "response: " + response);
-
-            JSONObject bodyObject = new JSONObject(response);
-            List<GalleryItem> items = parseJson(bodyObject);
-//            mItems.addAll(items);
-            return items;
-        } catch (IOException | JSONException e) {
+            Response<List<GalleryItem>> response = call.execute();
+            return response.body();
+        }catch (IOException e){
             Log.e(TAG, e.getMessage(), e);
             return null;
         }
     }
 
-    private List<GalleryItem> parseJson(JSONObject bodyObject) throws JSONException {
-        List<GalleryItem> items = new ArrayList<>();
+    public void  fetchPopularItemsAsync(){
+        Call<List<GalleryItem>> call =
+                mFlickerService.listItems(NetworkParams.getPopularOptions());
 
-        Gson gson = new GsonBuilder().create();
+        call.enqueue(new Callback<List<GalleryItem>>() {
+            @Override
+            public void onResponse(Call<List<GalleryItem>> call, Response<List<GalleryItem>> response) {
+                List<GalleryItem> items = response.body();
+                mPopularItemsLiveData.setValue(items);
+            }
 
-        JSONObject photosObject = bodyObject.getJSONObject("photos");
-        JSONArray photoArray = photosObject.getJSONArray("photo");
+            @Override
+            public void onFailure(Call<List<GalleryItem>> call, Throwable t) {
+                Log.e(TAG, t.getMessage(), t);
+            }
+        });
+    }
 
-        for (int i = 0; i < photoArray.length(); i++) {
-            JSONObject photoObject = photoArray.getJSONObject(i);
-
-            if (!photoObject.has("url_s"))
-                continue;
-
-            String id = photoObject.getString("id");
-            String title = photoObject.getString("title");
-            String url = photoObject.getString("url_s");
-
-            GalleryItem item = new GalleryItem(id, title, url);
-            String itemResult = gson.toJson(item);
-            GalleryItem galleryItem = gson.fromJson(itemResult, GalleryItem.class);
-            items.add(galleryItem);
+    public List<GalleryItem> fetchSearchItems(String query){
+        Call<List<GalleryItem>> call = mFlickerService.listItems(NetworkParams.getSearchOptions(query));
+        try {
+            Response<List<GalleryItem>> response = call.execute();
+            return response.body();
+        } catch (IOException e) {
+            Log.e(TAG, e.getMessage(), e);
+            return null;
         }
+    }
 
-        return items;
+    public void fetchSearchItemsAsync(String query){
+        Call<List<GalleryItem>> call =
+                mFlickerService.listItems(NetworkParams.getSearchOptions(query));
+
+        call.enqueue(new Callback<List<GalleryItem>>() {
+            @Override
+            public void onResponse(Call<List<GalleryItem>> call, Response<List<GalleryItem>> response) {
+                List<GalleryItem> items = response.body();
+                mSearchItemsLiveData.setValue(items);
+            }
+
+            @Override
+            public void onFailure(Call<List<GalleryItem>> call, Throwable t) {
+                Log.e(TAG, t.getMessage(), t);
+            }
+        });
     }
 }

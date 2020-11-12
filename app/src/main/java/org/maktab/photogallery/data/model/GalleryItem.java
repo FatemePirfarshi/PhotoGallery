@@ -1,6 +1,5 @@
-package org.maktab.photogallery.model;
+package org.maktab.photogallery.data.model;
 
-import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 public class GalleryItem {
