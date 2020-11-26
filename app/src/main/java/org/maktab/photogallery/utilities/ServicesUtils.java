@@ -8,9 +8,12 @@ import android.util.Log;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
+import org.greenrobot.eventbus.EventBus;
 import org.maktab.photogallery.R;
 import org.maktab.photogallery.data.model.GalleryItem;
-import org.maktab.photogallery.repository.PhotoRepository;
+import org.maktab.photogallery.data.repository.PhotoRepository;
+import org.maktab.photogallery.event.NotificationEvent;
+import org.maktab.photogallery.event.RxBus;
 import org.maktab.photogallery.view.activity.PhotoGalleryActivity;
 
 import java.util.List;
@@ -62,8 +65,14 @@ public class ServicesUtils {
                 .setAutoCancel(true)
                 .build();
 
-        NotificationManagerCompat notificationManagerCompat =
-                NotificationManagerCompat.from(context);
-        notificationManagerCompat.notify(NOTIFICATION_ID, notification);
+//        NotificationManagerCompat notificationManagerCompat =
+//                NotificationManagerCompat.from(context);
+//        notificationManagerCompat.notify(NOTIFICATION_ID, notification);
+
+//        NotificationEvent notificationEvent = new NotificationEvent(NOTIFICATION_ID, notification);
+//        EventBus.getDefault().post(notificationEvent);
+
+        NotificationEvent notificationEvent = new NotificationEvent(NOTIFICATION_ID, notification);
+        RxBus.getInstance().post(notificationEvent);
     }
 }

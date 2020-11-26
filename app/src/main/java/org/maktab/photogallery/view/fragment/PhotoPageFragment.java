@@ -3,11 +3,17 @@ package org.maktab.photogallery.view.fragment;
 import android.net.Uri;
 import android.os.Bundle;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.WebChromeClient;
+import android.webkit.WebResourceRequest;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 
 import org.maktab.photogallery.R;
 import org.maktab.photogallery.databinding.FragmentPhotoPageBinding;
@@ -77,6 +83,5 @@ public class PhotoPageFragment extends Fragment {
         mBinding.webViewPhotoPage.loadUrl(mPhotoPageUri.toString());
 
         return mBinding.getRoot();
-    }
     }
 }

@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class GetGalleryItemDeserializer implements JsonDeserializer<List<GalleryItem>> {
+
     @Override
     public List<GalleryItem> deserialize(
             JsonElement json,
@@ -34,8 +35,9 @@ public class GetGalleryItemDeserializer implements JsonDeserializer<List<Gallery
             String id = photoObject.get("id").getAsString();
             String title = photoObject.get("title").getAsString();
             String url = photoObject.get("url_s").getAsString();
+            String owner = photoObject.get("owner").getAsString();
 
-            GalleryItem item = new GalleryItem(id, title, url);
+            GalleryItem item = new GalleryItem(id, title, url, owner);
             items.add(item);
         }
 

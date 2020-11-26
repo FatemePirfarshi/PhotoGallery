@@ -17,7 +17,7 @@ import org.maktab.photogallery.R;
 import org.maktab.photogallery.utilities.QueryPreferences;
 import org.maktab.photogallery.view.activity.PhotoGalleryActivity;
 import org.maktab.photogallery.data.model.GalleryItem;
-import org.maktab.photogallery.repository.PhotoRepository;
+import org.maktab.photogallery.data.repository.PhotoRepository;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
